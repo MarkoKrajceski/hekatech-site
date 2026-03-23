@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Packs, Collect Cards — HekaTech</title>
+    <meta name="description" content="Open Packs, Collect Cards — a card pack opening simulator by HekaTech. Discover 201 unique cards across 5 factions.">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a14;
+            --bg-card: #12121f;
+            --bg-card-hover: #1a1a2e;
+            --magenta: #e91e9c;
+            --cyan: #00e5ff;
+            --pink-light: #f472b6;
+            --purple: #a855f7;
+            --purple-dark: #7c3aed;
+            --text: #e2e2f0;
+            --text-muted: #9898b0;
+            --border: #2a2a3e;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-brand {
+            font-weight: 700; font-size: 1.1rem;
+            background: linear-gradient(135deg, var(--magenta), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+        .nav-links a {
+            color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--pink-light); }
+        .nav-hamburger {
+            display: none; background: none; border: none; color: var(--text);
+            font-size: 1.5rem; cursor: pointer;
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            padding: 6rem 1.5rem 4rem;
+            position: relative;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(233, 30, 156, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
+                var(--bg);
+        }
+        .hero-content { max-width: 640px; }
+        .hero-icon {
+            width: 140px; height: 140px; border-radius: 28px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, var(--magenta), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 40px rgba(233, 30, 156, 0.3), 0 0 80px rgba(168, 85, 247, 0.15);
+            overflow: hidden;
+        }
+        .hero-icon img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 28px;
+        }
+        .hero h1 {
+            font-size: 2.8rem; font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, var(--pink-light) 50%, var(--cyan) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15; margin-bottom: 0.5rem;
+        }
+        .hero-studio {
+            font-size: 0.95rem; color: var(--magenta); font-weight: 600;
+            letter-spacing: 0.05em; margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.15rem; color: var(--text-muted);
+            margin-bottom: 2rem; max-width: 480px; margin-inline: auto;
+        }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.75rem 1.75rem; border-radius: 12px;
+            text-decoration: none; font-weight: 600; font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--magenta), var(--purple-dark));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(233, 30, 156, 0.3);
+        }
+        .btn-primary:hover { box-shadow: 0 6px 30px rgba(233, 30, 156, 0.45); }
+        .btn-outline {
+            border: 1px solid var(--border); color: var(--text);
+            background: rgba(255,255,255,0.03);
+        }
+        .btn-outline:hover { border-color: var(--pink-light); color: var(--pink-light); }
+        .btn svg { width: 20px; height: 20px; }
+
+        /* SECTIONS */
+        section { padding: 5rem 1.5rem; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .section-title {
+            font-size: 2rem; font-weight: 700; text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .section-subtitle {
+            text-align: center; color: var(--text-muted); margin-bottom: 3rem;
+            font-size: 1.05rem;
+        }
+        .accent-line {
+            width: 60px; height: 3px; margin: 0.75rem auto 1.5rem;
+            background: linear-gradient(90deg, var(--magenta), var(--cyan));
+            border-radius: 2px;
+        }
+
+        /* FEATURES */
+        #features { background: var(--bg); }
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .feature-card:hover {
+            border-color: var(--magenta);
+            transform: translateY(-4px);
+        }
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1rem;
+            background: linear-gradient(135deg, rgba(233,30,156,0.15), rgba(0,229,255,0.1));
+        }
+        .feature-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .feature-card p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* PRIVACY */
+        #privacy {
+            background: linear-gradient(180deg, var(--bg) 0%, #0d0d1a 100%);
+        }
+        .privacy-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+        }
+        .privacy-box h3 {
+            font-size: 1.2rem; margin: 2rem 0 0.75rem;
+            color: var(--pink-light);
+        }
+        .privacy-box h3:first-child { margin-top: 0; }
+        .privacy-box p, .privacy-box ul {
+            color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.75rem;
+        }
+        .privacy-box ul { padding-left: 1.25rem; }
+        .privacy-box li { margin-bottom: 0.4rem; }
+        .privacy-box a { color: var(--cyan); }
+        .privacy-effective {
+            font-size: 0.85rem; color: var(--text-muted);
+            margin-top: 2rem; padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* CONTACT */
+        #contact { background: var(--bg); text-align: center; }
+        .contact-email {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-size: 1.15rem; color: var(--cyan); text-decoration: none;
+            padding: 1rem 2rem; border: 1px solid var(--border);
+            border-radius: 12px; transition: border-color 0.3s;
+        }
+        .contact-email:hover { border-color: var(--cyan); }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 1.5rem; text-align: center;
+            font-size: 0.85rem; color: var(--text-muted);
+        }
+        footer a { color: var(--pink-light); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .footer-links { margin-top: 0.5rem; display: flex; gap: 1.5rem; justify-content: center; }
+
+        /* MOBILE */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .nav-links { display: none; }
+            .nav-links.open {
+                display: flex; flex-direction: column;
+                position: absolute; top: 100%; left: 0; right: 0;
+                background: rgba(10,10,20,0.95); padding: 1rem 1.5rem;
+                border-bottom: 1px solid var(--border);
+            }
+            .nav-hamburger { display: block; }
+            .privacy-box { padding: 1.5rem; }
+            section { padding: 3.5rem 1rem; }
+        }
+
+        /* Subtle animated glow on hero */
+        .hero::before {
+            content: '';
+            position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(233,30,156,0.08) 0%, transparent 70%);
+            animation: pulse 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <span class="nav-brand">HekaTech</span>
+    <button class="nav-hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle menu">&#9776;</button>
+    <ul class="nav-links">
+        <li><a href="#features" onclick="closeNav()">Features</a></li>
+        <li><a href="#privacy" onclick="closeNav()">Privacy Policy</a></li>
+        <li><a href="#contact" onclick="closeNav()">Contact</a></li>
+    </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+    <div class="hero-content">
+        <div class="hero-icon">
+            <!-- App icon placeholder — replace src with actual icon -->
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="22" fill="url(#g1)"/>
+                <text x="50" y="38" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">OPEN</text>
+                <text x="50" y="56" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">PACKS</text>
+                <text x="50" y="74" text-anchor="middle" fill="#00e5ff" font-size="10" font-family="sans-serif">HekaTech</text>
+                <defs><linearGradient id="g1" x1="0" y1="0" x2="100" y2="100"><stop stop-color="#e91e9c"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+            </svg>
+        </div>
+        <div class="hero-studio">by HekaTech</div>
+        <h1>Open Packs, Collect Cards</h1>
+        <p>Rip open booster packs, discover 201 unique cards, and build your ultimate collection — no gacha, no gambling, just pure collecting fun.</p>
+        <div class="hero-buttons">
+            <a href="#" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734c0-.382.218-.72.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-1.38l2.5 1.449c.5.29.5.76 0 1.049l-2.5 1.449-2.54-2.54 2.54-2.407zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+                Get on Google Play
+            </a>
+            <a href="#privacy" class="btn btn-outline">Privacy Policy</a>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="container">
+        <h2 class="section-title">Features</h2>
+        <div class="accent-line"></div>
+        <p class="section-subtitle">Everything you need for the ultimate card collecting experience</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#127183;</div>
+                <h3>201 Unique Cards</h3>
+                <p>Open packs and discover 201 unique cards across 5 distinct factions, each with their own lore and visual style.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#10024;</div>
+                <h3>Rare Pulls & Animations</h3>
+                <p>Rare, Epic, and Legendary rarities with unique reveal sounds and animations that make every pull exciting.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#9854;</div>
+                <h3>No Gacha, No Gambling</h3>
+                <p>Break the cycle of buying and enjoy unlimited packs for just 99 cents. One price, infinite packs.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128214;</div>
+                <h3>Rich Lore</h3>
+                <p>Read each character's lore and explore faction stories set in the world of HekaTech.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128202;</div>
+                <h3>Track Your Collection</h3>
+                <p>Build your collection and track what you've discovered with a detailed collection tracker.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128274;</div>
+                <h3>Fully Offline & Private</h3>
+                <p>No accounts, no ads, no tracking. Your collection stays on your device — completely private.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRIVACY POLICY -->
+<section id="privacy">
+    <div class="container">
+        <h2 class="section-title">Privacy Policy</h2>
+        <div class="accent-line"></div>
+        <p class="section-subtitle">Your privacy matters. Here's exactly how we handle your data: we don't.</p>
+        <div class="privacy-box">
+            <h3>Introduction</h3>
+            <p>This Privacy Policy describes how HekaTech ("we", "us", or "our") handles information in connection with the mobile application <strong>Open Packs, Collect Cards</strong> (package name: <code>com.hekatech.openpacks</code>), available on the Google Play Store.</p>
+            <p>We are committed to protecting your privacy. This policy explains what data we collect (none), how we use it (not applicable), and your rights.</p>
+
+            <h3>Information We Collect</h3>
+            <p><strong>We do not collect any personal data whatsoever.</strong></p>
+            <ul>
+                <li>No personal information (name, email, address, phone number)</li>
+                <li>No device identifiers or hardware information</li>
+                <li>No location data</li>
+                <li>No usage analytics or telemetry</li>
+                <li>No cookies or tracking technologies</li>
+            </ul>
+            <p>The app functions entirely offline. No user accounts or login are required.</p>
+
+            <h3>Local Storage</h3>
+            <p>The app uses on-device storage (SharedPreferences / local storage) solely to save your card collection progress. This data:</p>
+            <ul>
+                <li>Is stored only on your device</li>
+                <li>Is never transmitted to any server or third party</li>
+                <li>Is never accessed by us</li>
+                <li>Can be deleted at any time by uninstalling the app or clearing app data</li>
+            </ul>
+
+            <h3>How We Use Your Data</h3>
+            <p>Since we collect no data, there is no data to use. We do not process, analyze, or monetize any user information.</p>
+
+            <h3>Third-Party Sharing</h3>
+            <p><strong>We do not share any data with third parties.</strong> The app contains:</p>
+            <ul>
+                <li>No advertisements</li>
+                <li>No analytics SDKs (no Google Analytics, Firebase Analytics, etc.)</li>
+                <li>No third-party SDKs that collect user data</li>
+                <li>No social media integrations that track users</li>
+            </ul>
+
+            <h3>Data Transmission</h3>
+            <p><strong>No data is transmitted anywhere.</strong> The app does not make any network requests. It functions entirely offline with no internet permission required.</p>
+
+            <h3>Children's Privacy</h3>
+            <p>Open Packs, Collect Cards is rated PG-12 and is not specifically directed at children under the age of 13. However, since the app collects no personal data of any kind, it is inherently compliant with children's privacy regulations including COPPA (Children's Online Privacy Protection Act) and similar international regulations.</p>
+
+            <h3>Changes to This Policy</h3>
+            <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated effective date. We encourage you to review this page periodically.</p>
+
+            <h3>Contact Us</h3>
+            <p>If you have any questions or concerns about this Privacy Policy, please contact us at:</p>
+            <p><strong>Email:</strong> <a href="mailto:hekatech.studio@gmail.com">hekatech.studio@gmail.com</a></p>
+            <p><strong>Developer:</strong> HekaTech</p>
+
+            <p class="privacy-effective">Effective date: March 23, 2026 &middot; Last updated: March 23, 2026<br>Privacy Policy URL: <a href="https://hekatech.marko.business">hekatech.marko.business</a></p>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+    <div class="container">
+        <h2 class="section-title">Contact</h2>
+        <div class="accent-line"></div>
+        <p class="section-subtitle">Have questions, feedback, or just want to say hi?</p>
+        <a href="mailto:hekatech.studio@gmail.com" class="contact-email">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>
+            hekatech.studio@gmail.com
+        </a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>&copy; 2026 HekaTech. All rights reserved.</p>
+    <div class="footer-links">
+        <a href="#privacy">Privacy Policy</a>
+        <a href="mailto:hekatech.studio@gmail.com">Contact</a>
+        <a href="https://hekatech.marko.business">hekatech.marko.business</a>
+    </div>
+</footer>
+
+<script>
+    function closeNav() {
+        document.querySelector('.nav-links').classList.remove('open');
+    }
+    // Close mobile nav on outside click
+    document.addEventListener('click', function(e) {
+        var nav = document.querySelector('.nav-links');
+        var hamburger = document.querySelector('.nav-hamburger');
+        if (!nav.contains(e.target) && !hamburger.contains(e.target)) {
+            nav.classList.remove('open');
+        }
+    });
+</script>
+
+</body>
+</html>
